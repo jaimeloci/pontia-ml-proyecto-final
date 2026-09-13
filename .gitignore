@@ -30,3 +30,7 @@ ENV/
 # --- Jupyter and notebooks ---
 .ipynb_checkpoints/
 *.nbconvert.ipynb
+
+
+# --- VS Code ---
+*.code-workspace
