@@ -5,6 +5,7 @@ from pathlib import Path
 ROOT_PATH = Path(__file__).resolve().parent.parent
 RAW_DATA_PATH = ROOT_PATH / "data" / "raw" / "dataset_practica_final.csv"
 PROCESSED_DATA_PATH = ROOT_PATH / "data" / "processed" / "dataset_practica_final_preprocessed.csv"
+OUTPUTS_DIR = ROOT_PATH / "outputs"
 TARGET_COLUMN = 'is_canceled'
 IRRELEVANT_COLUMNS = [
     'meal',

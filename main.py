@@ -2,8 +2,8 @@
 
 from src.data_loader import preparar_datos,generar_csv_datos_preprocesados, cargar_datos
 from src.model_trainer import dividir_datos, escalar_datos
-from src.config import RAW_DATA_PATH, PROCESSED_DATA_PATH
-from src.evaluator import evaluar_modelo
+from src.config import IRRELEVANT_COLUMNS, RAW_DATA_PATH, PROCESSED_DATA_PATH, TARGET_COLUMN
+from src.evaluator import distribucion_variable_objetivo
 #from src.predictor import save_confusion_matrix, save_best_model
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
@@ -14,6 +14,9 @@ def main():
     
     print(f"\n[1/8] Cargando datos brutos desde el archivo: {RAW_DATA_PATH}...") 
     df_raw = cargar_datos()
+
+    print("\nGenerando imagen de distribución de la variable objetivo...")
+    distribucion_variable_objetivo(df_raw.drop(columns=IRRELEVANT_COLUMNS), TARGET_COLUMN)
 
     print("\n[2/8] Preprocesando datos...")
     df_preprocessed = preparar_datos(df_raw)
@@ -47,10 +50,10 @@ def main():
     # best_model_name = df_results.iloc[0]['Modelo']
     # print(f"\n[8/8] Exportando resultados para el mejor modelo: {best_model_name}")
 
-    # 7. Guardar resultados del mejor modelo
+    # Guardar resultados del mejor modelo
     #save_confusion_matrix(models[best_model_name], X_test, y_test, best_model_name)
     #save_best_model(models[best_model_name], best_model_name)
-    
+
 
 if __name__ == "__main__":
     main()
