@@ -34,7 +34,7 @@ def main():
     
     models = {
         'Logistic Regression': LogisticRegression(max_iter=1000, random_state=42),
-        'Random Forest': RandomForestClassifier(random_state=42),
+        'Random Forest': RandomForestClassifier(n_estimators=200, max_depth=30, random_state=42),
         'Decision Tree': DecisionTreeClassifier(random_state=42),
         'Decision Tree (Optimizado)': best_dt,
         'Random Forest (Optimizado)': best_rf,
