@@ -41,7 +41,8 @@ def prepare_pipeline_data(test_size: float = 0.2, random_state: int = 42):
     
     categorical_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='most_frequent')),
-        ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+        ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False)),
+        ('scaler', StandardScaler())
     ])
     
     preprocessor = ColumnTransformer(transformers=[

@@ -30,7 +30,6 @@ ENV/
 # --- Jupyter and notebooks ---
 .ipynb_checkpoints/
 *.nbconvert.ipynb
-*.ipynb
 *.joblib
 
 
@@ -43,3 +42,4 @@ notebooks/exploracion/pruebas_modelos.ipynb
 *.gif
 *.bmp
 *.tiff
+outputs/curva_roc_comparativa.png
