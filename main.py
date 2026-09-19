@@ -1,6 +1,7 @@
 
 
-from src.data_loader import preparar_datos, dividir_datos, escalar_datos, generar_csv_datos_preprocesados, cargar_datos
+from src.data_loader import preparar_datos,generar_csv_datos_preprocesados, cargar_datos
+from src.model_trainer import dividir_datos, escalar_datos
 from src.config import RAW_DATA_PATH, PROCESSED_DATA_PATH
 from src.evaluator import evaluar_modelo
 #from src.predictor import save_confusion_matrix, save_best_model
@@ -20,20 +21,20 @@ def main():
     print(f"\n[3/8] Guardando datos preprocesados en el archivo: {PROCESSED_DATA_PATH}...")
     generar_csv_datos_preprocesados(df_preprocessed)
 
-    # print("\n[4/8] Dividiendo datos en entrenamiento y prueba...")
-    # X_train, X_test, y_train, y_test = dividir_datos(df_preprocessed)
+    print("\n[4/8] Dividiendo datos en entrenamiento y prueba...")
+    X_train, X_test, y_train, y_test = dividir_datos(df_preprocessed)
 
-    # print("\n[5/8] Escalando datos de entrenamiento y prueba...")
-    # X_train, X_test, y_train, y_test, preprocessor = escalar_datos(X_train, X_test, y_train, y_test)
+    print("\n[5/8] Escalando datos de entrenamiento y prueba...")
+    X_train, X_test, y_train, y_test, preprocessor = escalar_datos(X_train, X_test, y_train, y_test)
 
-    # print("\n[6/8] Inicializando modelos...")
+    print("\n[6/8] Inicializando modelos...")
 
-    # models = {
-    #     'Logistic Regression': LogisticRegression(max_iter=1000, random_state=42),
-    #     'Random Forest': RandomForestClassifier(n_estimators=200, max_depth=30, random_state=42),
-    #     'Decision Tree': DecisionTreeClassifier(random_state=42),
-    #     'Gradient Boosting': GradientBoostingClassifier(random_state=42),
-    # }
+    models = {
+        'Logistic Regression': LogisticRegression(max_iter=1000, random_state=42),
+        'Random Forest': RandomForestClassifier(n_estimators=200, max_depth=30, random_state=42),
+        'Decision Tree': DecisionTreeClassifier(random_state=42),
+        'Gradient Boosting': GradientBoostingClassifier(random_state=42),
+    }
     
     # # Entrenar y evaluar
     # print("\n[7/8] Entrenando y evaluando modelos...")

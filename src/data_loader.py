@@ -53,16 +53,3 @@ def generar_csv_datos_preprocesados(df: pd.DataFrame):
     df_preprocessed = df
     df_preprocessed.to_csv(PROCESSED_DATA_PATH, index=False)
 
-def dividir_datos(df_preprocessed: pd.DataFrame):
-    X = df_preprocessed.drop(columns=[TARGET_COLUMN])
-    y = df_preprocessed[TARGET_COLUMN]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    return X_train, X_test, y_train, y_test
-
-def escalar_datos(X_train, X_test, y_train, y_test, ):
-    # Escalar características
-      scaler = StandardScaler()
-      X_train = scaler.fit_transform(X_train)
-      X_test = scaler.transform(X_test)
-      return X_train, X_test, y_train, y_test, scaler

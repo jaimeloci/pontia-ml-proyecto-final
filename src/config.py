@@ -7,7 +7,7 @@ RAW_DATA_PATH = ROOT_PATH / "data" / "raw" / "dataset_practica_final.csv"
 PROCESSED_DATA_PATH = ROOT_PATH / "data" / "processed" / "dataset_practica_final_preprocessed.csv"
 TARGET_COLUMN = 'is_canceled'
 IRRELEVANT_COLUMNS = [
-   'meal',
+    'meal',
     'total_of_special_requests',
     'required_car_parking_spaces',
     'days_in_waiting_list',
