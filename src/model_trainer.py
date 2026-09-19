@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
-from src.config import TARGET_COLUMN
+from src.config import DICT_MODEL_PARAMS, TARGET_COLUMN
 
 def dividir_datos(df_preprocessed: pd.DataFrame):
         
@@ -18,40 +18,27 @@ def escalar_datos(X_train, X_test, y_train, y_test, ):
       scaler = StandardScaler()
       X_train = scaler.fit_transform(X_train)
       X_test = scaler.transform(X_test)
-      return X_train, X_test, y_train, y_test, scaler
+      return X_train, X_test, y_train, y_test
 
 def entrenar_modelos(models, X_train, y_train):
     # Entrenamos los modelos  usando GridSearchCV para encontrar los mejores hiperparámetros
     for model_name in models:
         model = models[model_name]
+
         dict_parametros = get_model_params(model)
         model = GridSearchCV(model, dict_parametros, cv=3, scoring='accuracy', n_jobs=-1)
+
         model.fit(X_train, y_train)
         # Mostramos los mejores hiperparámetros encontrados
         print(f"Modelo: {model_name}")
         print(f"Mejores hiperparámetros encontrados: {model.best_params_}")
         print(f"Mejor score obtenido: {model.best_score_:.2%}")
+        print(f"==============================")
 
         models[model_name] = model
 
     return models
 
 def get_model_params(model):
-    switcher = {
-        'RandomForestClassifier': {
-            #'n_estimators': [50, 100, 200],
-            'n_estimators': [50],
-            #'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50]
-            'max_depth': [8, 12, 16]
-        },
-        'DecisionTreeClassifier': {
-            'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50]
-        },
-        'LogisticRegression': {
-            'C': [0.01, 0.1, 1, 10, 100],
-            'max_iter': [100, 200, 400, 500, 600, 700, 800, 900, 1000],
-            'solver': ['liblinear'],
-            'penalty': ['l1', 'l2'],
-        }
-    }
+    switcher = DICT_MODEL_PARAMS
     return switcher.get(model.__class__.__name__, {})

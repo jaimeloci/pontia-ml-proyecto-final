@@ -1,13 +1,10 @@
 
 
-from src.config import IRRELEVANT_COLUMNS, RAW_DATA_PATH, PROCESSED_DATA_PATH, TARGET_COLUMN
+from src.config import DICT_MODELS, IRRELEVANT_COLUMNS, RAW_DATA_PATH, PROCESSED_DATA_PATH, TARGET_COLUMN
 from src.data_loader import preparar_datos,generar_csv_datos_preprocesados, cargar_datos
 from src.model_trainer import dividir_datos, entrenar_modelos, escalar_datos
 from src.evaluator import distribucion_variable_objetivo,evaluar_modelos
 #from src.predictor import save_confusion_matrix, save_best_model
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 
 def main():
     print("======== PIPELINE INICIADA ==========")
@@ -28,15 +25,10 @@ def main():
     X_train, X_test, y_train, y_test = dividir_datos(df_preprocessed)
 
     print("\n[5/8] Escalando datos de entrenamiento y prueba...")
-    X_train, X_test, y_train, y_test, preprocessor = escalar_datos(X_train, X_test, y_train, y_test)
+    X_train, X_test, y_train, y_test = escalar_datos(X_train, X_test, y_train, y_test)
 
     print("\n[6/8] Inicializando modelos...")
-    models = {
-        # 'Gradient Boosting': GradientBoostingClassifier(random_state=42),
-        # 'Logistic Regression': LogisticRegression(random_state=42),
-        'Decision Tree': DecisionTreeClassifier(random_state=42),
-        'Random Forest': RandomForestClassifier(random_state=42),
-    }
+    models = DICT_MODELS
 
     # Entrenar modelos usando GridSearchCV y obtener los mejores hiperparámetros
     print("\n[7/8] Entrenando modelos...")

@@ -1,6 +1,8 @@
 
-import os
 from pathlib import Path
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
 
 ROOT_PATH = Path(__file__).resolve().parent.parent
 RAW_DATA_PATH = ROOT_PATH / "data" / "raw" / "dataset_practica_final.csv"
@@ -24,3 +26,33 @@ IRRELEVANT_COLUMNS = [
     'assigned_room_type', 
     'country' 
 ]
+
+DICT_MODELS = {
+    'Decision Tree': DecisionTreeClassifier(random_state=42),
+    'Random Forest': RandomForestClassifier(random_state=42),
+    'Gradient Boosting': GradientBoostingClassifier(random_state=42),
+    'Logistic Regression': LogisticRegression(random_state=42)
+}
+
+DICT_MODEL_PARAMS = {
+    'RandomForestClassifier': {
+        #'n_estimators': [50, 100, 200],
+        'n_estimators': [50],
+        #'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50]
+        'max_depth': [8, 12, 16]
+    },
+    'DecisionTreeClassifier': {
+        #'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50]
+        'max_depth': [8, 12, 16]
+    },
+    'LogisticRegression': {
+        # 'C': [0.01, 0.1, 1, 10, 100],
+        # 'max_iter': [100, 200, 400, 500, 600, 700, 800, 900, 1000],
+        # 'solver': ['liblinear'],
+        # 'penalty': ['l1', 'l2'],
+         'C': [0.01],
+         'max_iter': [100],
+         'solver': ['liblinear'],
+         'penalty': ['l1', 'l2'],
+    }
+}

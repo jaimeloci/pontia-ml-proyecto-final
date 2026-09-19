@@ -6,14 +6,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 # import tensorflow as tf
 from sklearn.metrics import (
-    accuracy_score,
-    confusion_matrix,
-    ConfusionMatrixDisplay,
-    precision_score,
-    recall_score,
-    f1_score,
-    mean_squared_error, mean_absolute_error, r2_score,
-    roc_auc_score
+    accuracy_score, confusion_matrix, ConfusionMatrixDisplay, 
+    precision_score, recall_score, f1_score,  
+    mean_squared_error, mean_absolute_error, r2_score, roc_auc_score
 )
 # from tensorflow.keras import layers, models
 

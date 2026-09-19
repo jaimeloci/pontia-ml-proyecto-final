@@ -2,7 +2,6 @@ from json import encoder
 
 import pandas as pd
 from sklearn.impute import SimpleImputer
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from src.config import RAW_DATA_PATH, PROCESSED_DATA_PATH, TARGET_COLUMN, IRRELEVANT_COLUMNS
 
