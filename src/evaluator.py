@@ -1,5 +1,5 @@
 from src.config import OUTPUTS_DIR
-from src.predictor import predecir
+from src.predictor import obtener_predicciones
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -12,19 +12,30 @@ from sklearn.metrics import (
 )
 # from tensorflow.keras import layers, models
 
-def evaluar_modelos(models, X_test, y_test):
+def evaluar_modelos(y_test, y_pred, y_pred_proba):
 
     results = []
 
-    for name, model in models.items():
-        y_pred = predecir(model, X_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        results.append({'Modelo': name, 'Precisión': accuracy})
+    for name, y_pred_model in y_pred.items():
+        acc = accuracy_score(y_test, y_pred_model)
+        prec = precision_score(y_test, y_pred_model)
+        rec = recall_score(y_test, y_pred_model)
+        f1 = f1_score(y_test, y_pred_model)
+        auc = None
+        results.append({'Modelo': name, 'Accuracy': acc, 'Precisión': prec, 'Recall': rec, 'F1': f1, 'AUC': auc})
 
+    for name, y_pred_model_proba in y_pred_proba.items():
+        auc = roc_auc_score(y_test, y_pred_model_proba[:, 1])
+        for result in results:
+            if result['Modelo'] == name:
+                result['AUC'] = auc
+                break
+    
     df_results = pd.DataFrame(results)
-    df_results = df_results.sort_values(by='Precisión', ascending=False).reset_index(drop=True)
+    df_results = df_results.sort_values(by='Accuracy', ascending=False).reset_index(drop=True)
     return df_results
 
+# Metodo para generar fichero png con una visualización de la distribucion la variable objetivo
 def distribucion_variable_objetivo(df, target_column):
     plt.figure(figsize=(6, 4))
     sns.countplot(x=target_column, data=df)

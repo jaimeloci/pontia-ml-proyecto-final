@@ -21,14 +21,15 @@ def escalar_datos(X_train, X_test, y_train, y_test, ):
       return X_train, X_test, y_train, y_test
 
 def entrenar_modelos(models, X_train, y_train):
-    # Entrenamos los modelos  usando GridSearchCV para encontrar los mejores hiperparámetros
+    # Entrenamos los modelos usando GridSearchCV para encontrar los mejores hiperparámetros
     for model_name in models:
         model = models[model_name]
 
-        dict_parametros = get_model_params(model)
+        dict_parametros = get_model_params(model) # Obtenemos los parámetros segun el algoritmo del modelo
         model = GridSearchCV(model, dict_parametros, cv=3, scoring='accuracy', n_jobs=-1)
 
         model.fit(X_train, y_train)
+
         # Mostramos los mejores hiperparámetros encontrados
         print(f"Modelo: {model_name}")
         print(f"Mejores hiperparámetros encontrados: {model.best_params_}")

@@ -37,7 +37,7 @@ DICT_MODELS = {
 DICT_MODEL_PARAMS = {
     'RandomForestClassifier': {
         #'n_estimators': [50, 100, 200],
-        'n_estimators': [50],
+        'n_estimators': [10],
         #'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50]
         'max_depth': [8, 12, 16]
     },
@@ -51,7 +51,7 @@ DICT_MODEL_PARAMS = {
         # 'solver': ['liblinear'],
         # 'penalty': ['l1', 'l2'],
          'C': [0.01],
-         'max_iter': [100],
+         'max_iter': [50],
          'solver': ['liblinear'],
          'penalty': ['l1', 'l2'],
     }
