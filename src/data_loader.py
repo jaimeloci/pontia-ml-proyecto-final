@@ -6,10 +6,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from src.config import RAW_DATA_PATH, PROCESSED_DATA_PATH, TARGET_COLUMN, IRRELEVANT_COLUMNS
 
+def cargar_datos():
+    return pd.read_csv(RAW_DATA_PATH)
 
-def preparar_datos():
-    # Cargar datos
-    df = pd.read_csv(RAW_DATA_PATH)
+def preparar_datos(df: pd.DataFrame):
 
     # Quitamos las variables irrelevantes para el modelo, ya que no aportan información útil para la predicción de la variable objetivo.
     df_without_irrelevant = df.drop(columns=IRRELEVANT_COLUMNS)
