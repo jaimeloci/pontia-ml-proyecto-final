@@ -1,5 +1,5 @@
-from src.predictor import predecir
 from src.model_trainer import entrenar_modelo
+from src.predictor import predecir
 from sklearn.metrics import accuracy_score
 import pandas as pd
 

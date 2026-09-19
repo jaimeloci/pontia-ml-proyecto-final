@@ -31,10 +31,7 @@ def preparar_datos(df: pd.DataFrame):
         columns=encoder.get_feature_names_out(categorical_columns)
     )
     df_encoded.columns = df_encoded.columns.str.lower()
-    df_preprocessed = pd.concat(
-        [df_preprocessed.drop(columns=categorical_columns), df_encoded],
-        axis=1
-    )
+    df_preprocessed = pd.concat([df_preprocessed.drop(columns=categorical_columns), df_encoded], axis=1)
 
     # Escalado de variables numéricas
     scaler = StandardScaler()
@@ -52,10 +49,9 @@ def preparar_datos(df: pd.DataFrame):
     #df_preprocessed.describe().transpose()
     return df_preprocessed
 
-def generar_datos_procesados(df: pd.DataFrame):
+def generar_csv_datos_preprocesados(df: pd.DataFrame):
     df_preprocessed = df
     df_preprocessed.to_csv(PROCESSED_DATA_PATH, index=False)
-
 
 def dividir_datos(df_preprocessed: pd.DataFrame):
     X = df_preprocessed.drop(columns=[TARGET_COLUMN])
