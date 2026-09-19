@@ -33,10 +33,10 @@ def main():
     print("\n[6/8] Inicializando modelos...")
 
     models = {
-        'Logistic Regression': LogisticRegression(max_iter=1000, random_state=42),
-        'Random Forest': RandomForestClassifier(n_estimators=200, max_depth=30, random_state=42),
+          # 'Gradient Boosting': GradientBoostingClassifier(random_state=42),
+        'Logistic Regression': LogisticRegression( random_state=42),
         'Decision Tree': DecisionTreeClassifier(random_state=42),
-        'Gradient Boosting': GradientBoostingClassifier(random_state=42),
+        'Random Forest': RandomForestClassifier(random_state=42),
     }
     
     # Entrenar y evaluar
