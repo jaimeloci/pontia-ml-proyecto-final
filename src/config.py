@@ -1,10 +1,10 @@
 
 import os
+from pathlib import Path
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-
-RAW_DATA_PATH = f'{ROOT_PATH}/data/raw/dataset_practica_final.csv'
-PROCESSED_DATA_PATH = f'{ROOT_PATH}/data/processed/dataset_practica_final_procesado.csv'
+ROOT_PATH = Path(__file__).resolve().parent.parent
+RAW_DATA_PATH = ROOT_PATH / "data" / "raw" / "dataset_practica_final.csv"
+PROCESSED_DATA_PATH = ROOT_PATH / "data" / "processed" / "dataset_practica_final_preprocessed.csv"
 TARGET_COLUMN = 'is_canceled'
 IRRELEVANT_COLUMNS = [
    'meal',
