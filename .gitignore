@@ -31,8 +31,15 @@ ENV/
 .ipynb_checkpoints/
 *.nbconvert.ipynb
 *.ipynb
+*.joblib
 
 
 # --- VS Code ---
 *.code-workspace
 notebooks/exploracion/pruebas_modelos.ipynb
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff

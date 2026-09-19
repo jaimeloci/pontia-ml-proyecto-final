@@ -5,7 +5,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 
 from src.data_loader import prepare_pipeline_data
-from src.hyperparameter_tuning import optimize_random_forest
+from src.hyperparameter_tuning import optimize_decision_tree, optimize_random_forest
 from src.evaluator import evaluate_all_models, save_confusion_matrix
 from src.predictor import save_best_model
 
@@ -30,10 +30,13 @@ def main():
     # 2. Definir modelos y aplicar Bonus de Optimización
     print("\n[2/4] Optimizando e inicializando modelos...")
     best_rf = optimize_random_forest(X_train, y_train)
+    best_dt = optimize_decision_tree(X_train, y_train)
     
     models = {
         'Logistic Regression': LogisticRegression(max_iter=1000, random_state=42),
+        'Random Forest': RandomForestClassifier(random_state=42),
         'Decision Tree': DecisionTreeClassifier(random_state=42),
+        'Decision Tree (Optimizado)': best_dt,
         'Random Forest (Optimizado)': best_rf,
         'Gradient Boosting': GradientBoostingClassifier(random_state=42),
         'Deep Neural Network (Keras)': build_keras_model(X_train.shape[1])
