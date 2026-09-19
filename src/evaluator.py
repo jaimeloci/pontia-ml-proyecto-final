@@ -1,16 +1,10 @@
 from src.config import OUTPUTS_DIR
-from src.model_trainer import entrenar_modelo
 from src.predictor import predecir
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 # import tensorflow as tf
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import (    RandomForestClassifier)
-from lightgbm import LGBMClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
@@ -23,12 +17,11 @@ from sklearn.metrics import (
 )
 # from tensorflow.keras import layers, models
 
-def evaluar_modelo(models, X_train, y_train, X_test, y_test):
+def evaluar_modelos(models, X_test, y_test):
 
     results = []
 
     for name, model in models.items():
-        model = entrenar_modelo(model, X_train, y_train)
         y_pred = predecir(model, X_test)
         accuracy = accuracy_score(y_test, y_pred)
         results.append({'Modelo': name, 'Precisión': accuracy})

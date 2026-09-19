@@ -1,9 +1,9 @@
 
 
-from src.data_loader import preparar_datos,generar_csv_datos_preprocesados, cargar_datos
-from src.model_trainer import dividir_datos, escalar_datos
 from src.config import IRRELEVANT_COLUMNS, RAW_DATA_PATH, PROCESSED_DATA_PATH, TARGET_COLUMN
-from src.evaluator import distribucion_variable_objetivo, evaluar_modelo
+from src.data_loader import preparar_datos,generar_csv_datos_preprocesados, cargar_datos
+from src.model_trainer import dividir_datos, entrenar_modelos, escalar_datos
+from src.evaluator import distribucion_variable_objetivo,evaluar_modelos
 #from src.predictor import save_confusion_matrix, save_best_model
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
@@ -31,17 +31,20 @@ def main():
     X_train, X_test, y_train, y_test, preprocessor = escalar_datos(X_train, X_test, y_train, y_test)
 
     print("\n[6/8] Inicializando modelos...")
-
     models = {
-          # 'Gradient Boosting': GradientBoostingClassifier(random_state=42),
-        'Logistic Regression': LogisticRegression( random_state=42),
+        # 'Gradient Boosting': GradientBoostingClassifier(random_state=42),
+        # 'Logistic Regression': LogisticRegression(random_state=42),
         'Decision Tree': DecisionTreeClassifier(random_state=42),
         'Random Forest': RandomForestClassifier(random_state=42),
     }
+
+    # Entrenar modelos usando GridSearchCV y obtener los mejores hiperparámetros
+    print("\n[7/8] Entrenando modelos...")
+    trained_models = entrenar_modelos(models, X_train, y_train)
     
-    # Entrenar y evaluar
-    print("\n[7/8] Entrenando y evaluando predicciones de modelos...")
-    df_results = evaluar_modelo(models, X_train, y_train, X_test, y_test)
+    # Evaluar modelos
+    print("\n[8/8] Evaluando modelos...")
+    df_results = evaluar_modelos(trained_models, X_test, y_test)
     
     print("\n=== RESULTADOS ===")
     print(df_results.to_string(index=False))

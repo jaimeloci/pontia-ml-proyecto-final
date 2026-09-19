@@ -20,22 +20,29 @@ def escalar_datos(X_train, X_test, y_train, y_test, ):
       X_test = scaler.transform(X_test)
       return X_train, X_test, y_train, y_test, scaler
 
-def entrenar_modelo(model, X_train, y_train):
-    # Entrenamos un modelo usando GridSearchCV para encontrar los mejores hiperparámetros
-    dict_parametros = get_model_params(model)
-    model = GridSearchCV(model, dict_parametros, cv=3, scoring='accuracy', n_jobs=-1)
-    model.fit(X_train, y_train)
-    # Mostramos los mejores hiperparámetros encontrados
-    print(f"Mejores hiperparámetros encontrados: {model.best_params_}")
-    print(f"Mejor score obtenido: {model.best_score_:.2%}")
+def entrenar_modelos(models, X_train, y_train):
+    # Entrenamos los modelos  usando GridSearchCV para encontrar los mejores hiperparámetros
+    for model_name in models:
+        model = models[model_name]
+        dict_parametros = get_model_params(model)
+        model = GridSearchCV(model, dict_parametros, cv=3, scoring='accuracy', n_jobs=-1)
+        model.fit(X_train, y_train)
+        # Mostramos los mejores hiperparámetros encontrados
+        print(f"Modelo: {model_name}")
+        print(f"Mejores hiperparámetros encontrados: {model.best_params_}")
+        print(f"Mejor score obtenido: {model.best_score_:.2%}")
 
-    return model
+        models[model_name] = model
+
+    return models
 
 def get_model_params(model):
     switcher = {
         'RandomForestClassifier': {
-            'n_estimators': [50, 100, 200],
-            'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50]
+            #'n_estimators': [50, 100, 200],
+            'n_estimators': [50],
+            #'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50]
+            'max_depth': [8, 12, 16]
         },
         'DecisionTreeClassifier': {
             'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50]
