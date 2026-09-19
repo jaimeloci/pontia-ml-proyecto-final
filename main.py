@@ -3,7 +3,7 @@
 from src.data_loader import preparar_datos,generar_csv_datos_preprocesados, cargar_datos
 from src.model_trainer import dividir_datos, escalar_datos
 from src.config import IRRELEVANT_COLUMNS, RAW_DATA_PATH, PROCESSED_DATA_PATH, TARGET_COLUMN
-from src.evaluator import distribucion_variable_objetivo
+from src.evaluator import distribucion_variable_objetivo, evaluar_modelo
 #from src.predictor import save_confusion_matrix, save_best_model
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
@@ -39,12 +39,12 @@ def main():
         'Gradient Boosting': GradientBoostingClassifier(random_state=42),
     }
     
-    # # Entrenar y evaluar
-    # print("\n[7/8] Entrenando y evaluando modelos...")
-    # df_results = evaluar_modelo(models, X_train, y_train, X_test, y_test)
+    # Entrenar y evaluar
+    print("\n[7/8] Entrenando y evaluando predicciones de modelos...")
+    df_results = evaluar_modelo(models, X_train, y_train, X_test, y_test)
     
-    # print("\n=== RESULTADOS ===")
-    # print(df_results.to_string(index=False))
+    print("\n=== RESULTADOS ===")
+    print(df_results.to_string(index=False))
     
     # # Exportar matriz de confusión y guardar el mejor modelo
     # best_model_name = df_results.iloc[0]['Modelo']

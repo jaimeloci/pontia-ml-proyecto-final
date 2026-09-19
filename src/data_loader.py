@@ -46,7 +46,7 @@ def preparar_datos(df: pd.DataFrame):
     }
 
     df_preprocessed[TARGET_COLUMN] = df_preprocessed[TARGET_COLUMN].replace(dict_canceled)
-    #df_preprocessed.describe().transpose()
+
     return df_preprocessed
 
 def generar_csv_datos_preprocesados(df: pd.DataFrame):
