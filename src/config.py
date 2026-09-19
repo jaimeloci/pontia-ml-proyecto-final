@@ -4,7 +4,7 @@ from pathlib import Path
 # Directorio raíz del proyecto (pontia-ml-proyecto-final)
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
-# Rutas de datos
+# Rutas de ficheros con los datos en bruto y procesados
 RAW_DATA_PATH = ROOT_DIR / "data" / "raw" / "dataset_practica_final.csv"
 PROCESSED_DATA_PATH = ROOT_DIR / "data" / "processed" / "dataset_practica_final_preprocessed.csv"
 

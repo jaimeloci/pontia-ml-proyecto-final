@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from src.config import OUTPUTS_DIR
 
 def evaluate_all_models(models: dict, X_train, y_train, X_test, y_test) -> pd.DataFrame:
+    
     results = []
     plt.figure(figsize=(10, 8))
     

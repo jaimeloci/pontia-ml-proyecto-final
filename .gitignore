@@ -30,7 +30,9 @@ ENV/
 # --- Jupyter and notebooks ---
 .ipynb_checkpoints/
 *.nbconvert.ipynb
+*.ipynb
 
 
 # --- VS Code ---
 *.code-workspace
+notebooks/exploracion/pruebas_modelos.ipynb

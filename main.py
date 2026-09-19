@@ -1,9 +1,3 @@
-def main():
-    print("Hello from pontia-ml-proyecto-final!")
-
-
-if __name__ == "__main__":
-    main()
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout
 from sklearn.linear_model import LogisticRegression
