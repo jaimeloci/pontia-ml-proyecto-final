@@ -3,9 +3,8 @@
 from src.config import DICT_MODELS, IRRELEVANT_COLUMNS, RAW_DATA_PATH, PROCESSED_DATA_PATH, TARGET_COLUMN
 from src.data_loader import preparar_datos,generar_csv_datos_preprocesados, cargar_datos
 from src.model_trainer import dividir_datos, entrenar_modelos, escalar_datos
-from src.evaluator import distribucion_variable_objetivo,evaluar_modelos
+from src.evaluator import distribucion_variable_objetivo,evaluar_modelos, generar_matriz_confusion
 from src.predictor import obtener_predicciones, obtener_predicciones_proba
-#from src.predictor import save_confusion_matrix, save_best_model
 
 def main():
     print("======== PIPELINE INICIADA ==========")
@@ -43,10 +42,9 @@ def main():
     
     print("\n=== RESULTADOS ===")
     print(df_results.to_string(index=False))
-    
-    # # Exportar matriz de confusión y guardar el mejor modelo
-    # best_model_name = df_results.iloc[0]['Modelo']
-    # print(f"\n[8/8] Exportando resultados para el mejor modelo: {best_model_name}")
+   
+    # Exportar matriz de confusión para el mejor modelo
+    generar_matriz_confusion(y_test, predictions)
 
     # Guardar resultados del mejor modelo
     #save_confusion_matrix(models[best_model_name], X_test, y_test, best_model_name)

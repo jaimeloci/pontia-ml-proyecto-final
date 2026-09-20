@@ -22,8 +22,7 @@ def escalar_datos(X_train, X_test, y_train, y_test, ):
 
 def entrenar_modelos(models, X_train, y_train):
     # Entrenamos los modelos usando GridSearchCV para encontrar los mejores hiperparámetros
-    for model_name in models:
-        model = models[model_name]
+    for model_name, model in models.items():
 
         dict_parametros = get_model_params(model) # Obtenemos los parámetros segun el algoritmo del modelo
         model = GridSearchCV(model, dict_parametros, cv=3, scoring='accuracy', n_jobs=-1)
@@ -36,7 +35,8 @@ def entrenar_modelos(models, X_train, y_train):
         print(f"Mejor score obtenido: {model.best_score_:.2%}")
         print(f"==============================")
 
-        models[model_name] = model
+        # Guardamos directamente el modelo óptimo (GridSearchCV ya lo reentrenó sobre X_train)
+        models[model_name] = model.best_estimator_
 
     return models
 

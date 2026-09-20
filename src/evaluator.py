@@ -1,16 +1,15 @@
 from src.config import OUTPUTS_DIR
-from src.predictor import obtener_predicciones
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 # import tensorflow as tf
+# from tensorflow.keras import layers, models
 from sklearn.metrics import (
     accuracy_score, confusion_matrix, ConfusionMatrixDisplay, 
     precision_score, recall_score, f1_score,  
     mean_squared_error, mean_absolute_error, r2_score, roc_auc_score
 )
-# from tensorflow.keras import layers, models
 
 def evaluar_modelos(y_test, y_pred, y_pred_proba):
 
@@ -22,7 +21,11 @@ def evaluar_modelos(y_test, y_pred, y_pred_proba):
         rec = recall_score(y_test, y_pred_model)
         f1 = f1_score(y_test, y_pred_model)
         auc = None
-        results.append({'Modelo': name, 'Accuracy': acc, 'Precisión': prec, 'Recall': rec, 'F1': f1, 'AUC': auc})
+        mse, rmse, mae, r2 = calcular_metricas_evaluacion(y_pred_model, y_test, False)
+        results.append({'Modelo': name,
+                        'Accuracy': acc, 'Precisión': prec, 'Recall': rec, 'F1': f1,
+                        'AUC': auc, 
+                        'MSE': mse, 'RMSE': rmse, 'MAE': mae, 'R2': r2})
 
     for name, y_pred_model_proba in y_pred_proba.items():
         auc = roc_auc_score(y_test, y_pred_model_proba[:, 1])
@@ -30,7 +33,7 @@ def evaluar_modelos(y_test, y_pred, y_pred_proba):
             if result['Modelo'] == name:
                 result['AUC'] = auc
                 break
-    
+
     df_results = pd.DataFrame(results)
     df_results = df_results.sort_values(by='Accuracy', ascending=False).reset_index(drop=True)
     return df_results
@@ -44,6 +47,18 @@ def distribucion_variable_objetivo(df, target_column):
     plt.ylabel('Cantidad de reservas')
     plt.savefig(OUTPUTS_DIR / f"distribucion_{target_column}.png")
     plt.close()
+
+def generar_matriz_confusion(y_test, y_pred):
+    for model_name, y_pred_model in y_pred.items():
+        cm = confusion_matrix(y_test, y_pred_model)
+
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['No Cancelado', 'Cancelado'])
+        disp.plot(cmap=plt.cm.Blues,values_format='.2%')
+        plt.title(f'Matriz de Confusión - {model_name}')
+        plt.xlabel('Predicción')
+        plt.ylabel('Real')
+        plt.savefig(OUTPUTS_DIR / f"matriz_confusion_{model_name}.png")
+        plt.close()
 
 # Calculamos las métricas de evaluación
 def calcular_metricas_evaluacion(y_prediccion: np.ndarray, y_real: np.ndarray, verbose: bool = True):
