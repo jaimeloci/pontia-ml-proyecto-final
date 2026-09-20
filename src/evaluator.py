@@ -48,12 +48,13 @@ def distribucion_variable_objetivo(df, target_column):
     plt.savefig(OUTPUTS_DIR / f"distribucion_{target_column}.png")
     plt.close()
 
-def generar_matriz_confusion(y_test, y_pred):
-    for model_name, y_pred_model in y_pred.items():
-        cm = confusion_matrix(y_test, y_pred_model)
+# Metodo para generar fichero png con una visualización de la matriz de confusión del modelo que se evalúa.
+def generar_matriz_confusion(y_test, y_preds):
 
+    for model_name, y_pred_model in y_preds.items():
+        cm = confusion_matrix(y_test, y_pred_model, normalize='true')
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['No Cancelado', 'Cancelado'])
-        disp.plot(cmap=plt.cm.Blues,values_format='.2%')
+        disp.plot(cmap=plt.cm.Blues, values_format='.2%')
         plt.title(f'Matriz de Confusión - {model_name}')
         plt.xlabel('Predicción')
         plt.ylabel('Real')

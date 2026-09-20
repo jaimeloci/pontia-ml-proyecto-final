@@ -1,6 +1,7 @@
 
 from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from lightgbm import LGBMClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 
@@ -30,8 +31,9 @@ IRRELEVANT_COLUMNS = [
 DICT_MODELS = {
     'Decision Tree': DecisionTreeClassifier(random_state=42),
     'Random Forest': RandomForestClassifier(random_state=42),
+    'LightGBM': LGBMClassifier(random_state=42),
+    'Logistic Regression': LogisticRegression(random_state=42),
     'Gradient Boosting': GradientBoostingClassifier(random_state=42),
-    'Logistic Regression': LogisticRegression(random_state=42)
 }
 
 DICT_MODEL_PARAMS = {
@@ -51,8 +53,26 @@ DICT_MODEL_PARAMS = {
         # 'solver': ['liblinear'],
         # 'penalty': ['l1', 'l2'],
          'C': [0.01],
-         'max_iter': [50],
+         'max_iter': [10],
          'solver': ['liblinear'],
          'penalty': ['l1', 'l2'],
+    },
+    'LGBMClassifier': {
+        # 'n_estimators': [100, 200],
+        # 'learning_rate': [0.03, 0.1],
+        # 'max_depth': [6, 10],
+        # 'num_leaves': [31, 63]
+       'n_estimators': [5,10],
+       'learning_rate': [0.03,0.1],
+       'max_depth': [6, 10],
+       'num_leaves': [3, 6]
+    },
+    'GradientBoostingClassifier': {
+        # 'n_estimators': [100, 200],
+        # 'learning_rate': [0.03, 0.1],
+        # 'max_depth': [3, 5, 7]
+        'n_estimators': [10, 20],
+        'learning_rate': [0.03, 0.1],
+        'max_depth': [3, 5, 7]
     }
 }

@@ -1,14 +1,12 @@
-
-
 from src.config import DICT_MODELS, IRRELEVANT_COLUMNS, RAW_DATA_PATH, PROCESSED_DATA_PATH, TARGET_COLUMN
-from src.data_loader import preparar_datos,generar_csv_datos_preprocesados, cargar_datos
-from src.model_trainer import dividir_datos, entrenar_modelos, escalar_datos
-from src.evaluator import distribucion_variable_objetivo,evaluar_modelos, generar_matriz_confusion
+from src.data_loader import cargar_datos, preparar_datos, generar_csv_datos_preprocesados 
+from src.model_trainer import dividir_datos, escalar_datos, entrenar_modelos
 from src.predictor import obtener_predicciones, obtener_predicciones_proba
+from src.evaluator import distribucion_variable_objetivo,evaluar_modelos, generar_matriz_confusion
 
 def main():
     print("======== PIPELINE INICIADA ==========")
-    
+ 
     print(f"\n[1/9] Cargando datos brutos desde el archivo: {RAW_DATA_PATH}...") 
     df_raw = cargar_datos()
 
@@ -42,14 +40,53 @@ def main():
     
     print("\n=== RESULTADOS ===")
     print(df_results.to_string(index=False))
+    print("=" * 100)
+    for i, row in df_results.iterrows():
+        print(f"Modelo: {row['Modelo']}")
+        print(f"Accuracy: {row['Accuracy']:.4f}")
+        print(f"Precisión: {row['Precisión']:.4f}")
+        print(f"Recall: {row['Recall']:.4f}")
+        print(f"F1: {row['F1']:.4f}")
+        print(f"AUC: {row['AUC']:.4f}")
+        print(f"MSE (Error cuadrático medio): {row['MSE']:.4f}")
+        print(f"RMSE (Raíz del error cuadrático medio): {row['RMSE']:.4f}")
+        print(f"MAE (Error absoluto medio): {row['MAE']:.4f}")
+        print(f"R2 (Coeficiente de determinación): {row['R2']:.4f}")
+        print(f"El modelo explica aproximadamente el {row['R2']:.2%} de la varianza")
+        print("-" * 60)
    
     # Exportar matriz de confusión para el mejor modelo
     generar_matriz_confusion(y_test, predictions)
+
+
+    print("\n=== RESULTADOS TENSORFLOW (Keras) ===")
+    keras_model(X_train, y_train, X_test, y_test)
 
     # Guardar resultados del mejor modelo
     #save_confusion_matrix(models[best_model_name], X_test, y_test, best_model_name)
     #save_best_model(models[best_model_name], best_model_name)
 
+
+from tensorflow.keras import layers, models
+import tensorflow as tf
+def keras_model(X_train, y_train, X_test, y_test):
+    model = models.Sequential()
+    model.add(layers.Input(shape=(X_train.shape[1],)), name='input_layer')
+    model.add(layers.Dense(128, activation='relu'), name='hidden_layer_1')
+    model.add(layers.Dense(64, activation='relu'), name='hidden_layer_2')
+    model.add(layers.Dense(32, activation='relu'), name='hidden_layer_3')
+    model.add(layers.Dense(1, activation='sigmoid'), name='output_layer')
+    optimizer_adam = tf.keras.optimizers.Adam(learning_rate=0.001)
+    model.compile(optimizer=optimizer_adam, loss='binary_crossentropy', metrics=['accuracy'])
+
+    history_dp = model.fit(X_train, y_train, epochs=150, validation_split=0.2, verbose=1)
+
+    y_pred_prob = model.predict(X_test)
+
+    # Evaluamos el modelo en el conjunto de prueba
+    loss_dp, accuracy_dp = model.evaluate(X_test, y_test)
+    print(f"Test Loss: {loss_dp:.4f}, Test Accuracy: {accuracy_dp:.4f}")
+    return model
 
 if __name__ == "__main__":
     main()
