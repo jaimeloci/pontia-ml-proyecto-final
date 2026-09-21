@@ -3,13 +3,14 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-# import tensorflow as tf
-# from tensorflow.keras import layers, models
+import plotly.express as px
 from sklearn.metrics import (
     accuracy_score, confusion_matrix, ConfusionMatrixDisplay, 
     precision_score, recall_score, f1_score,  
     mean_squared_error, mean_absolute_error, r2_score, roc_auc_score
 )
+# import tensorflow as tf
+# from tensorflow.keras import layers, models
 
 def evaluar_modelos(y_test, y_pred, y_pred_proba):
 
@@ -81,6 +82,36 @@ def generar_curva_aprendizaje(history_dp):
     plt.savefig(OUTPUTS_DIR / "curva_aprendizaje.png")
     plt.close()
 
+# Visualización de la importancia de las variables
+def generar_grafica_importancia_variables(modelo_rfc, X):
+
+    col_importancia_rf = modelo_rfc.feature_importances_
+    df_importances_rf = pd.DataFrame({
+        'variable' : X.columns,
+        'importancia' : col_importancia_rf
+    })
+
+    df_importances_rf = df_importances_rf.sort_values(by='importancia', ascending=False)
+
+    # fig = px.bar(
+    #     df_importances_rf,
+    #     x='importancia',
+    #     y='variable',
+    #     text='importancia',
+    #     text_auto=".3%",
+    #     title='Importancia de las variables en el modelo Random Forest Classifier',
+    #     labels={'x': 'Importancia', 'y': 'Variable'},
+    #     width=700, height=500
+    # )
+    # fig.update_layout(xaxis_tickangle=-45)
+    # fig.write_image(OUTPUTS_DIR / "importancia_variables.png")
+    plt.figure(figsize=(10, 8))
+    sns.barplot(x='importancia', y='variable', data=df_importances_rf.head(15), palette='viridis')
+    plt.title('Top variables importantes en el modelo Random Forest Classifier')
+    plt.xlabel('Importancia')
+    plt.ylabel('Variable')
+    plt.savefig(OUTPUTS_DIR / "importancia_variables.png")
+    plt.close()
 
 # Calculamos las métricas de evaluación
 def calcular_metricas_evaluacion(y_prediccion: np.ndarray, y_real: np.ndarray, verbose: bool = True):

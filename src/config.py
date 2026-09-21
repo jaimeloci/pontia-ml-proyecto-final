@@ -29,19 +29,25 @@ IRRELEVANT_COLUMNS = [
 ]
 
 DICT_MODELS = {
-    'Decision Tree': DecisionTreeClassifier(random_state=42),
+    # 'Decision Tree': DecisionTreeClassifier(random_state=42),
     'Random Forest': RandomForestClassifier(random_state=42),
-    'LightGBM': LGBMClassifier(random_state=42),
-    'Logistic Regression': LogisticRegression(random_state=42),
-    'Gradient Boosting': GradientBoostingClassifier(random_state=42),
+    # 'LightGBM': LGBMClassifier(random_state=42),
+    # 'Logistic Regression': LogisticRegression(random_state=42),
+    # 'Gradient Boosting': GradientBoostingClassifier(random_state=42),
 }
 
 DICT_MODEL_PARAMS = {
     'RandomForestClassifier': {
         #'n_estimators': [50, 100, 200],
-        'n_estimators': [10],
-        #'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50]
-        'max_depth': [8, 12, 16]
+        #'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50],
+        #'min_samples_leaf': [1, 2, 4],
+        #min_samples_split': [2, 5, 10],
+        #'n_jobs': [-1]
+        'max_depth': [4, 8, 12],
+        'n_estimators': [10, 20, 30],
+        'min_samples_leaf': [1, 2, 4],
+        'min_samples_split': [2, 5, 8],
+        'n_jobs': [-1]
     },
     'DecisionTreeClassifier': {
         #'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50]

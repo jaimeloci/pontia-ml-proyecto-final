@@ -2,7 +2,7 @@ from src.config import DICT_MODELS, IRRELEVANT_COLUMNS, RAW_DATA_PATH, PROCESSED
 from src.data_loader import cargar_datos, preparar_datos, generar_csv_datos_preprocesados 
 from src.model_trainer import dividir_datos, escalar_datos, entrenar_modelos
 from src.predictor import obtener_predicciones, obtener_predicciones_proba
-from src.evaluator import distribucion_variable_objetivo,evaluar_modelos, generar_curva_aprendizaje, generar_mapa_calor_correlacion, generar_matriz_confusion
+from src.evaluator import distribucion_variable_objetivo,evaluar_modelos, generar_curva_aprendizaje, generar_grafica_importancia_variables, generar_mapa_calor_correlacion, generar_matriz_confusion
 from tensorflow.keras import layers, models
 import tensorflow as tf
 
@@ -35,6 +35,9 @@ def main():
 
     print("\n[7/9] Entrenando modelos...")
     trained_models = entrenar_modelos(models, X_train, y_train)
+
+    print("\nGenerando gráfica de importancia de variables...")
+    generar_grafica_importancia_variables(trained_models['Random Forest'], df_preprocessed.drop(columns=TARGET_COLUMN))
 
     print("\n[8/9] Obteniendo predicciones de los modelos...")
     predictions = obtener_predicciones(trained_models, X_test)
@@ -96,6 +99,3 @@ def keras_model(X_train, y_train, X_test, y_test):
 
 if __name__ == "__main__":
     main()
-
-
-#df_preprocessed.drop(columns=target_column)
