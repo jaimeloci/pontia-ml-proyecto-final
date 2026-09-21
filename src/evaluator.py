@@ -61,6 +61,27 @@ def generar_matriz_confusion(y_test, y_preds):
         plt.savefig(OUTPUTS_DIR / f"matriz_confusion_{model_name}.png")
         plt.close()
 
+# Mapa de calor de correlación
+def generar_mapa_calor_correlacion(df):
+    plt.figure(figsize=(10, 8))
+    corr = df.corr()[['is_canceled']].sort_values(by='is_canceled', ascending=False)
+    sns.heatmap(corr.head(15), annot=True, cmap='coolwarm', fmt='.2f')
+    plt.title('Top variables correlacionadas con la cancelación')
+    plt.savefig(OUTPUTS_DIR / "top_variables_correlacionadas.png")
+    plt.close()
+
+# Se muestra la función de coste del modelo
+def generar_curva_aprendizaje(history_dp):
+    plt.plot(history_dp.history['loss'], label='Acc train')
+    plt.plot(history_dp.history['val_loss'], label='Acc val')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Curva de aprendizaje')
+    plt.legend()
+    plt.savefig(OUTPUTS_DIR / "curva_aprendizaje.png")
+    plt.close()
+
+
 # Calculamos las métricas de evaluación
 def calcular_metricas_evaluacion(y_prediccion: np.ndarray, y_real: np.ndarray, verbose: bool = True):
     """Calcula las métricas de evaluación para un modelo de regresión.

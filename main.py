@@ -2,7 +2,9 @@ from src.config import DICT_MODELS, IRRELEVANT_COLUMNS, RAW_DATA_PATH, PROCESSED
 from src.data_loader import cargar_datos, preparar_datos, generar_csv_datos_preprocesados 
 from src.model_trainer import dividir_datos, escalar_datos, entrenar_modelos
 from src.predictor import obtener_predicciones, obtener_predicciones_proba
-from src.evaluator import distribucion_variable_objetivo,evaluar_modelos, generar_matriz_confusion
+from src.evaluator import distribucion_variable_objetivo,evaluar_modelos, generar_curva_aprendizaje, generar_mapa_calor_correlacion, generar_matriz_confusion
+from tensorflow.keras import layers, models
+import tensorflow as tf
 
 def main():
     print("======== PIPELINE INICIADA ==========")
@@ -15,6 +17,9 @@ def main():
 
     print("\n[2/9] Preprocesando datos...")
     df_preprocessed = preparar_datos(df_raw)
+
+    print("\nGenerando mapa de calor de correlación...")
+    generar_mapa_calor_correlacion(df_preprocessed)
 
     print(f"\n[3/9] Guardando datos preprocesados en el archivo: {PROCESSED_DATA_PATH}...")
     generar_csv_datos_preprocesados(df_preprocessed)
@@ -55,38 +60,42 @@ def main():
         print(f"El modelo explica aproximadamente el {row['R2']:.2%} de la varianza")
         print("-" * 60)
    
-    # Exportar matriz de confusión para el mejor modelo
+    # Exportar matriz de confusión de los distintos modelos
     generar_matriz_confusion(y_test, predictions)
 
+    print("\n=== EJECUTANDO PROCESO TENSORFLOW (Keras) ===")
+    history_dp, y_pred_prob = keras_model(X_train, y_train, X_test, y_test)
 
-    print("\n=== RESULTADOS TENSORFLOW (Keras) ===")
-    keras_model(X_train, y_train, X_test, y_test)
-
-    # Guardar resultados del mejor modelo
-    #save_confusion_matrix(models[best_model_name], X_test, y_test, best_model_name)
-    #save_best_model(models[best_model_name], best_model_name)
+    generar_curva_aprendizaje(history_dp)
+    generar_matriz_confusion(y_test, {'Keras Model': (y_pred_prob > 0.5).astype(int).flatten()})
 
 
-from tensorflow.keras import layers, models
-import tensorflow as tf
 def keras_model(X_train, y_train, X_test, y_test):
-    model = models.Sequential()
-    model.add(layers.Input(shape=(X_train.shape[1],)), name='input_layer')
-    model.add(layers.Dense(128, activation='relu'), name='hidden_layer_1')
-    model.add(layers.Dense(64, activation='relu'), name='hidden_layer_2')
-    model.add(layers.Dense(32, activation='relu'), name='hidden_layer_3')
-    model.add(layers.Dense(1, activation='sigmoid'), name='output_layer')
+   # Definimos la arquitectura del modelo
+    modelo_dp = models.Sequential([
+    layers.Input(shape=(X_train.shape[1], ), name='i1'),
+    layers.Dense(128, activation='relu', name='h1'),
+    layers.Dense(64, activation='relu', name='h2'),
+    layers.Dense(32, activation='relu', name='h3'),
+    layers.Dense(1, activation='sigmoid', name='o1')
+])
+
     optimizer_adam = tf.keras.optimizers.Adam(learning_rate=0.001)
-    model.compile(optimizer=optimizer_adam, loss='binary_crossentropy', metrics=['accuracy'])
+    modelo_dp.compile(optimizer=optimizer_adam, loss='binary_crossentropy', metrics=['accuracy'])
 
-    history_dp = model.fit(X_train, y_train, epochs=150, validation_split=0.2, verbose=1)
+    history_dp = modelo_dp.fit(X_train, y_train, epochs=10, validation_split=0.2, verbose=1)
 
-    y_pred_prob = model.predict(X_test)
+    y_pred_prob = modelo_dp.predict(X_test)
 
     # Evaluamos el modelo en el conjunto de prueba
-    loss_dp, accuracy_dp = model.evaluate(X_test, y_test)
+    loss_dp, accuracy_dp = modelo_dp.evaluate(X_test, y_test)
     print(f"Test Loss: {loss_dp:.4f}, Test Accuracy: {accuracy_dp:.4f}")
-    return model
+
+    #return modelo_dp
+    return history_dp, y_pred_prob
 
 if __name__ == "__main__":
     main()
+
+
+#df_preprocessed.drop(columns=target_column)
