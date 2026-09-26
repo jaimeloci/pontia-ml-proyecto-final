@@ -25,11 +25,11 @@ DICT_CAST_CATEGORY_COLS = {
 }
 
 DICT_MODELS = {
-    # 'Decision Tree': DecisionTreeClassifier(random_state=42),
+    'Decision Tree': DecisionTreeClassifier(random_state=42),
     'Random Forest': RandomForestClassifier(random_state=42),
-    # 'LightGBM': LGBMClassifier(random_state=42),
-    # 'Logistic Regression': LogisticRegression(random_state=42),
-    # 'Gradient Boosting': GradientBoostingClassifier(random_state=42),
+    'LightGBM': LGBMClassifier(random_state=42),
+    'Logistic Regression': LogisticRegression(random_state=42),
+    'Gradient Boosting': GradientBoostingClassifier(random_state=42),
 }
 
 DICT_GRID_PARAMS = {
@@ -49,10 +49,14 @@ DICT_GRID_PARAMS = {
          'model__penalty': ['l1', 'l2'],
     },
     'LightGBM': {
-       'model__n_estimators': [5, 10],
-       'model__learning_rate': [0.03, 0.1],
-       'model__max_depth': [6, 10],
-       'model__num_leaves': [3, 6]
+        'prep__cat__min_frequency': [5, 10, 20],
+        'model__n_estimators': [200, 500],
+        'model__num_leaves': [31, 63, 127],
+        'model__learning_rate': [0.05, 0.1],
+        'model__min_child_samples': [20, 50],
+        'model__subsample': [0.8, 1.0],
+        'model__subsample_freq': [1],
+        'model__colsample_bytree': [0.8, 1.0],
     },
     'Gradient Boosting': {
         'model__n_estimators': [10, 20],
