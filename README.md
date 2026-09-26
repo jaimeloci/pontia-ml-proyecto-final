@@ -58,13 +58,12 @@ Resultados y conclusiones
 Para poder escoger un modelo nos hemos basado en las métrica Accurancy y nos salio con mejor métrica el modelo LightBGM. En otras pruebas nos salio mejor modelo el Random Forest mirando meétricas como el Accuracy o el AUC. 
 Nos hemos basado en estas métricas porque era un problema de clasificación binaria y las métricas que nos dan valor son el Accuracy, el F1-Score y el AUC. Tanto el Accuracy como el AUC nos han parecido métricas más explicables porque en el AUC podíamos apoyarnos en gráficos. También hemos pensamos que los resultados no eran tan sensibles a posibles errores como podría ser un diagnostico clínico.
 
-================================================
-                 RESULTADOS
-==================================================
-Modelo                Accuracy  Precisión   Recall       F1      AUC
-LightGBM              0.890108   0.864782 0.833691 0.848952 0.959048
-Decision Tree         0.864687   0.830702 0.797174 0.813593 0.922536
-Keras Neural Net      0.864687   0.844586 0.777841 0.809841 0.940740
-Gradient Boosting     0.852835   0.861032 0.718711 0.783461 0.929908
-Logistic Regression   0.817363   0.810612 0.661504 0.728507 0.900985
-Random Forest         0.781933   0.969056 0.424873 0.590741 0.915823
+
+| Modelo | Accuracy | Precisión | Recall | F1 | AUC |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **LightGBM** | 0.890108 | 0.864782 | 0.833691 | 0.848952 | 0.959048 |
+| **Decision Tree** | 0.864687 | 0.830702 | 0.797174 | 0.813593 | 0.922536 |
+| **Keras Neural Net** | 0.864687 | 0.844586 | 0.777841 | 0.809841 | 0.940740 |
+| **Gradient Boosting** | 0.852835 | 0.861032 | 0.718711 | 0.783461 | 0.929908 |
+| **Logistic Regression** | 0.817363 | 0.810612 | 0.661504 | 0.728507 | 0.900985 |
+| **Random Forest** | 0.781933 | 0.969056 | 0.424873 | 0.590741 | 0.915823 |
