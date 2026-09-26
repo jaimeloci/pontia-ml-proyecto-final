@@ -28,6 +28,13 @@ IRRELEVANT_COLUMNS = [
     'country' 
 ]
 
+DICT_CAST_CATEGORY_COLS = {
+    'arrival_date_month': 'str',
+    'agent': 'str',
+    'company': 'str',
+    'is_repeated_guest': 'str',
+}
+
 DICT_MODELS = {
     # 'Decision Tree': DecisionTreeClassifier(random_state=42),
     'Random Forest': RandomForestClassifier(random_state=42),
@@ -36,49 +43,31 @@ DICT_MODELS = {
     # 'Gradient Boosting': GradientBoostingClassifier(random_state=42),
 }
 
-DICT_MODEL_PARAMS = {
-    'RandomForestClassifier': {
-        #'n_estimators': [50, 100, 200],
-        #'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50],
-        #'min_samples_leaf': [1, 2, 4],
-        #min_samples_split': [2, 5, 10],
-        #'n_jobs': [-1]
-        'max_depth': [4, 8, 12],
-        'n_estimators': [10, 20, 30],
-        'min_samples_leaf': [1, 2, 4],
-        'min_samples_split': [2, 5, 8],
-        'n_jobs': [-1]
+DICT_GRID_PARAMS = {
+    'Random Forest': {
+        'model__max_depth': [4, 8, 12],
+        'model__n_estimators': [10, 20, 30],
+        'model__min_samples_leaf': [1, 2, 4],
+        'model__min_samples_split': [2, 5, 8],
     },
-    'DecisionTreeClassifier': {
-        #'max_depth': [8, 12, 16, 25, 30, 35, 40, 45, 50]
-        'max_depth': [8, 12, 16]
+    'Decision Tree': {
+        'model__max_depth': [8, 12, 16]
     },
-    'LogisticRegression': {
-        # 'C': [0.01, 0.1, 1, 10, 100],
-        # 'max_iter': [100, 200, 400, 500, 600, 700, 800, 900, 1000],
-        # 'solver': ['liblinear'],
-        # 'penalty': ['l1', 'l2'],
-         'C': [0.01],
-         'max_iter': [10],
-         'solver': ['liblinear'],
-         'penalty': ['l1', 'l2'],
+    'Logistic Regression': {
+         'model__C': [0.01],
+         'model__max_iter': [10],
+         'model__solver': ['liblinear'],
+         'model__penalty': ['l1', 'l2'],
     },
-    'LGBMClassifier': {
-        # 'n_estimators': [100, 200],
-        # 'learning_rate': [0.03, 0.1],
-        # 'max_depth': [6, 10],
-        # 'num_leaves': [31, 63]
-       'n_estimators': [5,10],
-       'learning_rate': [0.03,0.1],
-       'max_depth': [6, 10],
-       'num_leaves': [3, 6]
+    'LightGBM': {
+       'model__n_estimators': [5, 10],
+       'model__learning_rate': [0.03, 0.1],
+       'model__max_depth': [6, 10],
+       'model__num_leaves': [3, 6]
     },
-    'GradientBoostingClassifier': {
-        # 'n_estimators': [100, 200],
-        # 'learning_rate': [0.03, 0.1],
-        # 'max_depth': [3, 5, 7]
-        'n_estimators': [10, 20],
-        'learning_rate': [0.03, 0.1],
-        'max_depth': [3, 5, 7]
+    'Gradient Boosting': {
+        'model__n_estimators': [10, 20],
+        'model__learning_rate': [0.03, 0.1],
+        'model__max_depth': [3, 5, 7]
     }
 }

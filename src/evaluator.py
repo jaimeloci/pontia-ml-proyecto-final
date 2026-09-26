@@ -1,57 +1,41 @@
-from src.config import OUTPUTS_DIR
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import plotly.express as px
 from sklearn.metrics import (
     accuracy_score, confusion_matrix, ConfusionMatrixDisplay, 
-    precision_score, recall_score, f1_score,  
-    mean_squared_error, mean_absolute_error, r2_score, roc_auc_score
+    precision_score, recall_score, f1_score, roc_auc_score
 )
-# import tensorflow as tf
-# from tensorflow.keras import layers, models
+from src.config import OUTPUTS_DIR, TARGET_COLUMN
 
-def evaluar_modelos(y_test, y_pred, y_pred_proba):
-
+def evaluar_modelos(y_test, y_pred: dict, y_pred_proba: dict):
     results = []
 
     for name, y_pred_model in y_pred.items():
         acc = accuracy_score(y_test, y_pred_model)
-        prec = precision_score(y_test, y_pred_model)
-        rec = recall_score(y_test, y_pred_model)
-        f1 = f1_score(y_test, y_pred_model)
+        prec = precision_score(y_test, y_pred_model, zero_division=0)
+        rec = recall_score(y_test, y_pred_model, zero_division=0)
+        f1 = f1_score(y_test, y_pred_model, zero_division=0)
         auc = None
-        mse, rmse, mae, r2 = calcular_metricas_evaluacion(y_pred_model, y_test, False)
-        results.append({'Modelo': name,
-                        'Accuracy': acc, 'Precisión': prec, 'Recall': rec, 'F1': f1,
-                        'AUC': auc, 
-                        'MSE': mse, 'RMSE': rmse, 'MAE': mae, 'R2': r2})
 
-    for name, y_pred_model_proba in y_pred_proba.items():
-        auc = roc_auc_score(y_test, y_pred_model_proba[:, 1])
-        for result in results:
-            if result['Modelo'] == name:
-                result['AUC'] = auc
-                break
+        if name in y_pred_proba and y_pred_proba[name] is not None:
+            proba = y_pred_proba[name]
+            y_score = proba[:, 1] if proba.ndim > 1 else proba
+            auc = roc_auc_score(y_test, y_score)
+
+        results.append({
+            'Modelo': name,
+            'Accuracy': acc,
+            'Precisión': prec,
+            'Recall': rec,
+            'F1': f1,
+            'AUC': auc
+        })
 
     df_results = pd.DataFrame(results)
-    df_results = df_results.sort_values(by='Accuracy', ascending=False).reset_index(drop=True)
-    return df_results
+    return df_results.sort_values(by='Accuracy', ascending=False).reset_index(drop=True)
 
-# Metodo para generar fichero png con una visualización de la distribucion la variable objetivo
-def distribucion_variable_objetivo(df, target_column):
-    plt.figure(figsize=(6, 4))
-    sns.countplot(x=target_column, data=df)
-    plt.title(f'Distribución de la variable objetivo ({target_column})')
-    plt.xticks([0, 1], ['No Cancelado', 'Cancelado'])
-    plt.ylabel('Cantidad de reservas')
-    plt.savefig(OUTPUTS_DIR / f"distribucion_{target_column}.png")
-    plt.close()
-
-# Metodo para generar fichero png con una visualización de la matriz de confusión del modelo que se evalúa.
-def generar_matriz_confusion(y_test, y_preds):
-
+def generar_matriz_confusion(y_test, y_preds: dict):
     for model_name, y_pred_model in y_preds.items():
         cm = confusion_matrix(y_test, y_pred_model, normalize='true')
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['No Cancelado', 'Cancelado'])
@@ -62,93 +46,77 @@ def generar_matriz_confusion(y_test, y_preds):
         plt.savefig(OUTPUTS_DIR / f"matriz_confusion_{model_name}.png")
         plt.close()
 
-# Mapa de calor de correlación
-def generar_mapa_calor_correlacion(df):
+def generar_grafica_importancia_variables(pipeline, categorical_columns: list):
+    """
+    Agrupa e imprime la importancia de variables extrayendo las características 
+    directamente del ColumnTransformer dentro del Pipeline[cite: 1].
+    """
+    model = pipeline.named_steps['model']
+    preprocessor = pipeline.named_steps['prep']
+
+    if not hasattr(model, 'feature_importances_'):
+        print(f"El modelo {type(model).__name__} no soporta feature_importances_.")
+        return
+
+    importances = model.feature_importances_
+    feature_names = preprocessor.get_feature_names_out()
+
+    df_imp = pd.DataFrame({'variable': feature_names, 'importancia': importances})
+
+    # Función para mapear nombres transformados hacia la variable original[cite: 1]
+    def agrupar_variable(nombre):
+        partes = nombre.split('__', 1)
+        resto = partes[1] if len(partes) > 1 else nombre
+        for col in categorical_columns:
+            if resto.startswith(col + '_'):
+                return col
+        return resto
+
+    df_imp['variable_original'] = df_imp['variable'].apply(agrupar_variable)
+    df_agr = df_imp.groupby('variable_original', as_index=False)['importancia'].sum().sort_values(by='importancia', ascending=False)
+
     plt.figure(figsize=(10, 8))
-    corr = df.corr()[['is_canceled']].sort_values(by='is_canceled', ascending=False)
-    sns.heatmap(corr.head(15), annot=True, cmap='coolwarm', fmt='.2f')
-    plt.title('Top variables correlacionadas con la cancelación')
-    plt.savefig(OUTPUTS_DIR / "top_variables_correlacionadas.png")
-    plt.close()
-
-# Se muestra la función de coste del modelo
-def generar_curva_aprendizaje(history_dp):
-    plt.plot(history_dp.history['loss'], label='Acc train')
-    plt.plot(history_dp.history['val_loss'], label='Acc val')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Curva de aprendizaje')
-    plt.legend()
-    plt.savefig(OUTPUTS_DIR / "curva_aprendizaje.png")
-    plt.close()
-
-# Visualización de la importancia de las variables
-def generar_grafica_importancia_variables(modelo_rfc, X):
-
-    col_importancia_rf = modelo_rfc.feature_importances_
-    df_importances_rf = pd.DataFrame({
-        'variable' : X.columns,
-        'importancia' : col_importancia_rf
-    })
-
-    df_importances_rf = df_importances_rf.sort_values(by='importancia', ascending=False)
-
-    # fig = px.bar(
-    #     df_importances_rf,
-    #     x='importancia',
-    #     y='variable',
-    #     text='importancia',
-    #     text_auto=".3%",
-    #     title='Importancia de las variables en el modelo Random Forest Classifier',
-    #     labels={'x': 'Importancia', 'y': 'Variable'},
-    #     width=700, height=500
-    # )
-    # fig.update_layout(xaxis_tickangle=-45)
-    # fig.write_image(OUTPUTS_DIR / "importancia_variables.png")
-    plt.figure(figsize=(10, 8))
-    sns.barplot(x='importancia', y='variable', data=df_importances_rf.head(15), palette='viridis')
-    plt.title('Top variables importantes en el modelo Random Forest Classifier')
+    sns.barplot(x='importancia', y='variable_original', data=df_agr.head(15), palette='viridis')
+    plt.title('Top variables importantes (Agregadas)')
     plt.xlabel('Importancia')
     plt.ylabel('Variable')
     plt.savefig(OUTPUTS_DIR / "importancia_variables.png")
     plt.close()
 
-# Calculamos las métricas de evaluación
-def calcular_metricas_evaluacion(y_prediccion: np.ndarray, y_real: np.ndarray, verbose: bool = True):
-    """Calcula las métricas de evaluación para un modelo de regresión.
-    
-    Calcula cuatro métricas comunes para evaluar modelos de regresión: MSE (Error Cuadrático Medio),
-    RMSE (Raíz del Error Cuadrático Medio), MAE (Error Absoluto Medio) y R² (Coeficiente de determinación).
-    Opcionalmente imprime los resultados en un formato legible.
-    
-    Args:
-        y_prediccion (np.ndarray): Valores predichos por el modelo.
-        y_real (np.ndarray): Valores reales observados.
-        verbose (bool, optional): Si es True, imprime las métricas calculadas. Por defecto es True.
-    
-    Returns:
-        tuple[float, float, float, float]: Una tupla con cuatro valores en el siguiente orden:
-            - mse: Error cuadrático medio.
-            - rmse: Raíz del error cuadrático medio.
-            - mae: Error absoluto medio.
-            - r2: Coeficiente de determinación.
-    
-    Example:
-        >>> mse, rmse, mae, r2 = calcular_metricas_evaluacion(modelo.predict(X_test), y_test)
-        >>> print(f"R²: {r2:.4f}")
-    """
-    
-    mse = mean_squared_error(y_real, y_prediccion)
-    rmse = np.sqrt(mse)
-    mae = mean_absolute_error(y_real, y_prediccion)
-    r2 = r2_score(y_real, y_prediccion)
 
-    if verbose:
-        print("\nEvaluación del modelo:")
-        print(f"MSE (Error cuadrático medio): {mse:.4f}")
-        print(f"RMSE (Raíz del error cuadrático medio): {rmse:.4f}")
-        print(f"MAE (Error absoluto medio): {mae:.4f}")
-        print(f"R² (Coeficiente de determinación): {r2:.4f}")
-        print(f"El modelo explica aproximadamente el {r2:.2%} de la varianza")
+    # src/evaluator.py
+
+
+
+
+
+def generar_mapa_calor_correlacion(df: pd.DataFrame):
+    """
+    Genera un mapa de calor con las principales correlaciones numéricas respecto a la variable objetivo.
+    """
+    plt.figure(figsize=(10, 8))
+    # Seleccionamos solo columnas numéricas para evitar errores en corr()
+    df_num = df.select_dtypes(include=['number'])
     
-    return mse, rmse, mae, r2
+    if TARGET_COLUMN in df_num.columns:
+        corr = df_num.corr()[[TARGET_COLUMN]].sort_values(by=TARGET_COLUMN, ascending=False)
+        sns.heatmap(corr.head(15), annot=True, cmap='coolwarm', fmt='.2f')
+        plt.title('Top variables correlacionadas con la cancelación')
+        plt.tight_layout()
+        plt.savefig(OUTPUTS_DIR / "top_variables_correlacionadas.png")
+        plt.close()
+
+def generar_curva_aprendizaje(history):
+    """
+    Guarda la gráfica de la curva de aprendizaje (pérdida/loss) del entrenamiento de Keras.
+    """
+    plt.figure(figsize=(8, 5))
+    plt.plot(history.history['loss'], label='Loss train')
+    plt.plot(history.history['val_loss'], label='Loss val')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Curva de aprendizaje - Keras')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(OUTPUTS_DIR / "curva_aprendizaje.png")
+    plt.close()

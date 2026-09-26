@@ -1,101 +1,133 @@
-from src.config import DICT_MODELS, IRRELEVANT_COLUMNS, RAW_DATA_PATH, PROCESSED_DATA_PATH, TARGET_COLUMN
-from src.data_loader import cargar_datos, preparar_datos, generar_csv_datos_preprocesados 
-from src.model_trainer import dividir_datos, escalar_datos, entrenar_modelos
-from src.predictor import obtener_predicciones, obtener_predicciones_proba
-from src.evaluator import distribucion_variable_objetivo,evaluar_modelos, generar_curva_aprendizaje, generar_grafica_importancia_variables, generar_mapa_calor_correlacion, generar_matriz_confusion
-from tensorflow.keras import layers, models
+import pandas as pd
+import numpy as np
 import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow.keras.callbacks import EarlyStopping
+
+from src.config import DICT_MODELS, DICT_CAST_CATEGORY_COLS, TARGET_COLUMN
+from src.data_loader import cargar_datos, preparar_datos, generar_csv_datos_preprocesados
+from src.model_trainer import dividir_datos, construir_preprocesador, entrenar_modelos
+from src.predictor import obtener_predicciones, obtener_predicciones_proba
+from src.evaluator import (
+    evaluar_modelos,
+    generar_matriz_confusion,
+    generar_grafica_importancia_variables,
+    generar_mapa_calor_correlacion,
+    generar_curva_aprendizaje
+)
+
+def entrenar_modelo_keras(X_train, y_train, X_test):
+    """
+    Entrena un modelo Keras transformando los datos primero con el preprocesador
+    y aplicando EarlyStopping para evitar el sobreajuste.
+    """
+    preprocessor = construir_preprocesador(X_train, min_frequency=20)
+    X_train_trans = preprocessor.fit_transform(X_train)
+    X_test_trans = preprocessor.transform(X_test)
+
+    # Red neuronal secuencial con capas Dropout
+    model_nn = models.Sequential([
+        layers.Input(shape=(X_train_trans.shape[1],)),
+        layers.Dense(128, activation='relu'),
+        layers.Dropout(0.2),
+        layers.Dense(64, activation='relu'),
+        layers.Dropout(0.2),
+        layers.Dense(32, activation='relu'),
+        layers.Dropout(0.2),
+        layers.Dense(1, activation='sigmoid')
+    ])
+
+    model_nn.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.01),
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+
+    early_stopping = EarlyStopping(
+        monitor='val_loss',
+        patience=10,
+        restore_best_weights=True
+    )
+
+    # Guardamos el historial del entrenamiento
+    history = model_nn.fit(
+        X_train_trans,
+        y_train,
+        epochs=50,
+        batch_size=32,
+        validation_split=0.2,
+        verbose=1,
+        callbacks=[early_stopping]
+    )
+
+    y_proba_nn = model_nn.predict(X_test_trans).flatten()
+    y_pred_nn = (y_proba_nn > 0.5).astype(int)
+
+    return y_pred_nn, y_proba_nn, history
 
 def main():
-    print("======== PIPELINE INICIADA ==========")
- 
-    print(f"\n[1/9] Cargando datos brutos desde el archivo: {RAW_DATA_PATH}...") 
+    print("==================================================")
+    print("         INICIANDO PIPELINE DE ML/DL              ")
+    print("==================================================")
+
+    # 1. Cargar y preparar datos
+    print("\n[1/6] Cargando datos...")
     df_raw = cargar_datos()
-
-    print("\nGenerando imagen de distribución de la variable objetivo...")
-    distribucion_variable_objetivo(df_raw.drop(columns=IRRELEVANT_COLUMNS), TARGET_COLUMN)
-
-    print("\n[2/9] Preprocesando datos...")
-    df_preprocessed = preparar_datos(df_raw)
-
-    print("\nGenerando mapa de calor de correlación...")
-    generar_mapa_calor_correlacion(df_preprocessed)
-
-    print(f"\n[3/9] Guardando datos preprocesados en el archivo: {PROCESSED_DATA_PATH}...")
-    generar_csv_datos_preprocesados(df_preprocessed)
-
-    print("\n[4/9] Dividiendo datos en entrenamiento y prueba...")
-    X_train, X_test, y_train, y_test = dividir_datos(df_preprocessed)
-
-    print("\n[5/9] Escalando datos de entrenamiento y prueba...")
-    X_train, X_test, y_train, y_test = escalar_datos(X_train, X_test, y_train, y_test)
-
-    print("\n[6/9] Inicializando modelos...")
-    models = DICT_MODELS
-
-    print("\n[7/9] Entrenando modelos...")
-    trained_models = entrenar_modelos(models, X_train, y_train)
-
-    print("\nGenerando gráfica de importancia de variables...")
-    generar_grafica_importancia_variables(trained_models['Random Forest'], df_preprocessed.drop(columns=TARGET_COLUMN))
-
-    print("\n[8/9] Obteniendo predicciones de los modelos...")
-    predictions = obtener_predicciones(trained_models, X_test)
-    predictions_proba = obtener_predicciones_proba(trained_models, X_test)
     
-    print("\n[9/9] Evaluando modelos...")
-    df_results = evaluar_modelos(y_test, predictions, predictions_proba)
-    
-    print("\n=== RESULTADOS ===")
-    print(df_results.to_string(index=False))
-    print("=" * 100)
-    for i, row in df_results.iterrows():
-        print(f"Modelo: {row['Modelo']}")
-        print(f"Accuracy: {row['Accuracy']:.4f}")
-        print(f"Precisión: {row['Precisión']:.4f}")
-        print(f"Recall: {row['Recall']:.4f}")
-        print(f"F1: {row['F1']:.4f}")
-        print(f"AUC: {row['AUC']:.4f}")
-        print(f"MSE (Error cuadrático medio): {row['MSE']:.4f}")
-        print(f"RMSE (Raíz del error cuadrático medio): {row['RMSE']:.4f}")
-        print(f"MAE (Error absoluto medio): {row['MAE']:.4f}")
-        print(f"R2 (Coeficiente de determinación): {row['R2']:.4f}")
-        print(f"El modelo explica aproximadamente el {row['R2']:.2%} de la varianza")
-        print("-" * 60)
-   
-    # Exportar matriz de confusión de los distintos modelos
+    # Aplicar casting opcional si existen las columnas configuradas
+    df_raw = df_raw.astype({k: v for k, v in DICT_CAST_CATEGORY_COLS.items() if k in df_raw.columns})
+
+    print("[2/6] Limpiando datos...")
+    df_clean = preparar_datos(df_raw)
+    generar_csv_datos_preprocesados(df_clean)
+
+    # Generar Mapa de Calor de Correlación
+    generar_mapa_calor_correlacion(df_clean)
+
+    # 2. Dividir dataset (Estratificado)
+    print("[3/6] Dividiendo datos en Train / Test...")
+    X_train, X_test, y_train, y_test = dividir_datos(df_clean, stratify=True)
+
+    # 3. Entrenar modelos Scikit-Learn y LightGBM con GridSearchCV + Pipelines
+    print("[4/6] Entrenando modelos tradicionales...")
+    trained_pipelines = entrenar_modelos(DICT_MODELS, X_train, y_train)
+
+    # 4. Generar predicciones usando el módulo predictor.py
+    print("[5/6] Generando predicciones...")
+    predictions = obtener_predicciones(trained_pipelines, X_test)
+    predictions_proba = obtener_predicciones_proba(trained_pipelines, X_test)
+
+    # Red Neuronal Keras (Opcional)
+    try:
+        print("\n--- Entrenando Red Neuronal Keras ---")
+        y_pred_nn, y_proba_nn, history = entrenar_modelo_keras(X_train, y_train, X_test)
+        predictions['Keras Neural Net'] = y_pred_nn
+        predictions_proba['Keras Neural Net'] = y_proba_nn
+
+        # Generar Curva de Aprendizaje para Keras
+        generar_curva_aprendizaje(history)  
+
+    except Exception as e:
+        print(f"Omitiendo Keras por el siguiente motivo: {e}")
+
+    # 5. Evaluación y Generación de Gráficos
+    print("\n[6/6] Evaluando resultados y guardando gráficos...")
+    df_resultados = evaluar_modelos(y_test, predictions, predictions_proba)
+
+    print("\n================================================")
+    print("                 RESULTADOS                       ")
+    print("==================================================")
+    print(df_resultados.to_string(index=False))
+    print("==================================================")
+
+    # Generar gráficos de salidas
     generar_matriz_confusion(y_test, predictions)
 
-    print("\n=== EJECUTANDO PROCESO TENSORFLOW (Keras) ===")
-    history_dp, y_pred_prob = keras_model(X_train, y_train, X_test, y_test)
+    if 'Random Forest' in trained_pipelines:
+        cat_cols = X_train.select_dtypes(include=['object', 'category']).columns.tolist()
+        generar_grafica_importancia_variables(trained_pipelines['Random Forest'], cat_cols)
 
-    generar_curva_aprendizaje(history_dp)
-    generar_matriz_confusion(y_test, {'Keras Model': (y_pred_prob > 0.5).astype(int).flatten()})
-
-
-def keras_model(X_train, y_train, X_test, y_test):
-   # Definimos la arquitectura del modelo
-    modelo_dp = models.Sequential([
-    layers.Input(shape=(X_train.shape[1], ), name='i1'),
-    layers.Dense(128, activation='relu', name='h1'),
-    layers.Dense(64, activation='relu', name='h2'),
-    layers.Dense(32, activation='relu', name='h3'),
-    layers.Dense(1, activation='sigmoid', name='o1')
-])
-
-    optimizer_adam = tf.keras.optimizers.Adam(learning_rate=0.001)
-    modelo_dp.compile(optimizer=optimizer_adam, loss='binary_crossentropy', metrics=['accuracy'])
-
-    history_dp = modelo_dp.fit(X_train, y_train, epochs=10, validation_split=0.2, verbose=1)
-
-    y_pred_prob = modelo_dp.predict(X_test)
-
-    # Evaluamos el modelo en el conjunto de prueba
-    loss_dp, accuracy_dp = modelo_dp.evaluate(X_test, y_test)
-    print(f"Test Loss: {loss_dp:.4f}, Test Accuracy: {accuracy_dp:.4f}")
-
-    #return modelo_dp
-    return history_dp, y_pred_prob
+    print("\nPipeline completada con éxito.")
 
 if __name__ == "__main__":
     main()

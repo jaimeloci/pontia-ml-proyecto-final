@@ -1,44 +1,71 @@
 import pandas as pd
-from sklearn.model_selection import GridSearchCV, train_test_split
-from sklearn.preprocessing import StandardScaler
-from src.config import DICT_MODEL_PARAMS, TARGET_COLUMN
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from src.config import TARGET_COLUMN, DICT_GRID_PARAMS
 
-def dividir_datos(df_preprocessed: pd.DataFrame): 
-    # Eliminamos la columna is_canceled de las variables independientes
-    X = df_preprocessed.drop(columns=[TARGET_COLUMN])
-    y = df_preprocessed[TARGET_COLUMN]
+def dividir_datos(df: pd.DataFrame, stratify: bool = True):
+    """
+    Divide los datos en train/test manteniendo estratificación opcional[cite: 1].
+    """
+    X = df.drop(columns=[TARGET_COLUMN])
+    y = df[TARGET_COLUMN]
+    
+    stratify_col = y if stratify else None
+    return train_test_split(X, y, test_size=0.2, random_state=42, stratify=stratify_col)
 
-    # Hacemos un train-test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    return X_train, X_test, y_train, y_test
+def construir_preprocesador(X: pd.DataFrame, min_frequency: int = 10) -> ColumnTransformer:
+    """
+    Construye el ColumnTransformer centralizando imputación, escalado y encoding[cite: 1].
+    """
+    categorical_columns = X.select_dtypes(include=['object', 'category']).columns.tolist()
+    numerical_columns = X.select_dtypes(include=['number']).columns.tolist()
 
-def escalar_datos(X_train, X_test, y_train, y_test, ):
-    # Escalar características
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
-    return X_train, X_test, y_train, y_test
+    # Pipeline para numéricas: Imputación por media + Escalado[cite: 1]
+    num_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='mean')),
+        ('scaler', StandardScaler())
+    ])
 
-def entrenar_modelos(models, X_train, y_train):
-    # Entrenamos los modelos usando GridSearchCV para encontrar los mejores hiperparámetros
-    for model_name, model in models.items():
+    # Pipeline para categóricas: One-Hot Encoding manejando categorías infrecuentes[cite: 1]
+    cat_pipeline = Pipeline([
+        ('encoder', OneHotEncoder(sparse_output=False, handle_unknown='infrequent_if_exist', min_frequency=min_frequency))
+    ])
 
-        dict_parametros = get_model_params(model) # Obtenemos los parámetros segun el algoritmo del modelo
-        model = GridSearchCV(model, dict_parametros, cv=3, scoring='accuracy', n_jobs=-1, refit=True)
+    preprocessor = ColumnTransformer([
+        ('num', num_pipeline, numerical_columns),
+        ('cat', cat_pipeline, categorical_columns)
+    ])
 
-        model.fit(X_train, y_train)
+    return preprocessor
 
-        # Mostramos los mejores hiperparámetros encontrados
-        print(f"Modelo: {model_name}")
-        print(f"Mejores hiperparámetros encontrados: {model.best_params_}")
-        print(f"Mejor score obtenido: {model.best_score_:.2%}")
-        print(f"==============================")
-
-        # Guardamos directamente el modelo óptimo (GridSearchCV ya lo reentrenó(refit) sobre X_train)
-        models[model_name] = model.best_estimator_
-
-    return models
-
-def get_model_params(model):
-    switcher = DICT_MODEL_PARAMS
-    return switcher.get(model.__class__.__name__, {})
+def entrenar_modelos(models_dict: dict, X_train: pd.DataFrame, y_train: pd.Series, cv_folds: int = 3):
+    trained_pipelines = {}
+    
+    for name, model_inst in models_dict.items():
+        print(f"--- Entrenando y buscando hiperparámetros: {name} ---")
+        
+        # Se ensambla el Pipeline completo con ColumnTransformer + Modelo[cite: 1]
+        preprocessor = construir_preprocesador(X_train)
+        pipe = Pipeline([
+            ('prep', preprocessor),
+            ('model', model_inst)
+        ])
+        
+        param_grid = DICT_GRID_PARAMS.get(name, {})
+        
+        grid_search = GridSearchCV(
+            pipe,
+            param_grid=param_grid,
+            cv=cv_folds,
+            scoring='accuracy',  # Ajustado al criterio del cuaderno[cite: 1]
+            n_jobs=-1
+        )
+        grid_search.fit(X_train, y_train)
+        
+        print(f"Mejores parámetros para {name}: {grid_search.best_params_}")
+        trained_pipelines[name] = grid_search.best_estimator_
+        
+    return trained_pipelines
