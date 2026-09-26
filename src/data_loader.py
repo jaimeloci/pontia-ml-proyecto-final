@@ -1,6 +1,7 @@
 from json import encoder
 
 import pandas as pd
+import os
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from src.config import RAW_DATA_PATH, PROCESSED_DATA_PATH, TARGET_COLUMN, IRRELEVANT_COLUMNS
@@ -50,5 +51,6 @@ def preparar_datos(df: pd.DataFrame):
 
 def generar_csv_datos_preprocesados(df: pd.DataFrame):
     df_preprocessed = df
+    os.makedirs(os.path.dirname(PROCESSED_DATA_PATH), exist_ok=True)
     df_preprocessed.to_csv(PROCESSED_DATA_PATH, index=False)
 
