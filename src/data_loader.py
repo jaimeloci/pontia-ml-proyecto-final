@@ -24,11 +24,7 @@ def preparar_datos(df: pd.DataFrame) -> pd.DataFrame:
     return df_clean
 
 def generar_csv_datos_preprocesados(df: pd.DataFrame):
-<<<<<<< HEAD
-    df.to_csv(PROCESSED_DATA_PATH, index=False)
-=======
     df_preprocessed = df
     os.makedirs(os.path.dirname(PROCESSED_DATA_PATH), exist_ok=True)
     df_preprocessed.to_csv(PROCESSED_DATA_PATH, index=False)
 
->>>>>>> 2960fd1c68fdacd6f929fb6f566d35f1c6c1d79f
