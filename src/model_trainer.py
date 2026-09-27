@@ -41,7 +41,7 @@ def construir_preprocesador(X: pd.DataFrame, min_frequency: int = 10) -> ColumnT
 
     return preprocessor
 
-def entrenar_modelos(models_dict: dict, X_train: pd.DataFrame, y_train: pd.Series, cv_folds: int = 3):
+def entrenar_modelos(models_dict: dict, X_train: pd.DataFrame, y_train: pd.Series, cv_folds: int = 5):
     trained_pipelines = {}
     
     for name, model_inst in models_dict.items():
