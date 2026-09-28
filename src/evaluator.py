@@ -75,8 +75,8 @@ def generar_grafica_importancia_variables(pipeline, categorical_columns: list):
     df_imp['variable_original'] = df_imp['variable'].apply(agrupar_variable)
     df_agr = df_imp.groupby('variable_original', as_index=False)['importancia'].sum().sort_values(by='importancia', ascending=True)
 
-    plt.figure(figsize=(10, 8))
-    sns.barplot(x='importancia', y='variable_original', data=df_agr.head(15), palette='viridis')
+    plt.figure(figsize=(25, 10))
+    sns.barplot(x='importancia', y='variable_original', data=df_agr.head(15), palette='viridis', hue='variable_original')
     plt.title('Top variables importantes (Agregadas)')
     plt.xlabel('Importancia')
     plt.ylabel('Variable')

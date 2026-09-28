@@ -21,20 +21,20 @@ def entrenar_modelo_keras(X_train, y_train, X_test):
     Entrena un modelo Keras transformando los datos primero con el preprocesador
     y aplicando EarlyStopping para evitar el sobreajuste.
     """
-    preprocessor = construir_preprocesador(X_train, min_frequency=20)
+    preprocessor = construir_preprocesador(X=X_train, model_name='Red Neuronal Keras')
     X_train_trans = preprocessor.fit_transform(X_train)
     X_test_trans = preprocessor.transform(X_test)
 
     # Red neuronal secuencial con capas Dropout
     model_nn = models.Sequential([
-        layers.Input(shape=(X_train_trans.shape[1],)),
-        layers.Dense(128, activation='relu'),
+        layers.Input(shape=(X_train_trans.shape[1], ), name='i1'),
+        layers.Dense(128, activation='relu', name='h1'),
         layers.Dropout(0.2),
-        layers.Dense(64, activation='relu'),
+        layers.Dense(64, activation='relu', name='h2'),
         layers.Dropout(0.2),
-        layers.Dense(32, activation='relu'),
+        layers.Dense(32, activation='relu', name='h3'),
         layers.Dropout(0.2),
-        layers.Dense(1, activation='sigmoid')
+        layers.Dense(1, activation='sigmoid', name='o1')
     ])
 
     model_nn.compile(
@@ -74,12 +74,14 @@ def main():
     print("\n[1/6] Cargando datos...")
     df_raw = cargar_datos()
     
-    # Aplicar casting opcional si existen las columnas configuradas
-    df_raw = df_raw.astype({k: v for k, v in DICT_CAST_CATEGORY_COLS.items() if k in df_raw.columns})
 
     print("[2/6] Limpiando datos...")
     df_clean = preparar_datos(df_raw)
+    
     generar_csv_datos_preprocesados(df_clean)
+
+    # Aplicar casting opcional si existen las columnas configuradas
+    df_clean = df_clean.astype({k: v for k, v in DICT_CAST_CATEGORY_COLS.items() if k in df_clean.columns})
 
     # Generar Mapa de Calor de Correlación
     generar_mapa_calor_correlacion(df_clean)
@@ -101,12 +103,12 @@ def main():
     try:
         print("\n--- Entrenando Red Neuronal Keras ---")
         y_pred_nn, y_proba_nn, history = entrenar_modelo_keras(X_train, y_train, X_test)
-        predictions['Keras Neural Net'] = y_pred_nn
-        predictions_proba['Keras Neural Net'] = y_proba_nn
-
+        predictions['Red Neuronal Keras'] = y_pred_nn
+        predictions_proba['Red Neuronal Keras'] = y_proba_nn
+    
         # Generar Curva de Aprendizaje para Keras
         generar_curva_aprendizaje(history)  
-
+    
     except Exception as e:
         print(f"Omitiendo Keras por el siguiente motivo: {e}")
 
@@ -124,7 +126,7 @@ def main():
     generar_matriz_confusion(y_test, predictions)
 
     if 'Random Forest' in trained_pipelines:
-        cat_cols = X_train.select_dtypes(include=['object', 'category']).columns.tolist()
+        cat_cols = X_train.select_dtypes(include=['str', 'object', 'category']).columns.tolist()
         generar_grafica_importancia_variables(trained_pipelines['Random Forest'], cat_cols)
 
     print("\nPipeline completada con éxito.")
