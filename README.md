@@ -64,7 +64,7 @@ uv venv --python 3.12
 Ejecutar en un terminal:
 
 ```bash
-uv pip install -r requirements.txt
+uv sync
 ```
 
 ## 4. Ejecutar la aplicación
